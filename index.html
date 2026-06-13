@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B3 · Controle de Ações & IR</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #085041;
+    --red: #E24B4A;
+    --red-light: #FCEBEB;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --gray-bg: #F8F9FA;
+    --gray-border: #E2E5E9;
+    --gray-text: #6B7280;
+    --text: #1A1A1A;
+    --white: #FFFFFF;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F0F2F5; color: var(--text); min-height: 100vh; }
+
+  header { background: var(--green-dark); color: white; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  header svg { width: 28px; height: 28px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header span { font-size: 13px; opacity: 0.7; margin-left: auto; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Config banner */
+  .config-banner { background: var(--amber-light); border: 1px solid #EAB308; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .config-banner input { flex: 1; border: 1px solid #D1D5DB; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+  .config-banner button { background: var(--amber); color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .config-banner button:hover { opacity: 0.9; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: var(--white); border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .tab { flex: 1; text-align: center; padding: 9px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--gray-text); transition: all 0.15s; border: none; background: transparent; }
+  .tab.active { background: var(--green); color: white; }
+  .tab:hover:not(.active) { background: var(--gray-bg); }
+
+  /* Cards de resumo */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .card { background: var(--white); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+  .card-label { font-size: 12px; color: var(--gray-text); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .card-value { font-size: 22px; font-weight: 600; }
+  .card-value.pos { color: var(--green); }
+  .card-value.neg { color: var(--red); }
+  .card-value.neu { color: var(--blue); }
+
+  /* Seção */
+  .section { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; }
+
+  /* Tabela */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-text); border-bottom: 1px solid var(--gray-border); }
+  td { padding: 10px 10px; border-bottom: 1px solid var(--gray-border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-bg); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-c { background: var(--green-light); color: var(--green-dark); }
+  .badge-v { background: var(--red-light); color: var(--red); }
+  .badge-ticker { background: var(--blue-light); color: var(--blue); font-family: monospace; font-size: 12px; }
+
+  /* Formulário */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 12px; font-weight: 500; color: var(--gray-text); }
+  input, select { border: 1px solid var(--gray-border); border-radius: 6px; padding: 8px 10px; font-size: 13px; width: 100%; }
+  input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.15); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s; }
+  .btn-primary { background: var(--green); color: white; }
+  .btn-secondary { background: var(--gray-bg); color: var(--text); border: 1px solid var(--gray-border); }
+  .btn-danger-sm { background: none; border: none; color: var(--red); cursor: pointer; font-size: 12px; padding: 3px 6px; border-radius: 4px; }
+  .btn:hover { opacity: 0.88; }
+
+  /* DARF */
+  .darf-box { background: var(--gray-bg); border: 1px solid var(--gray-border); border-radius: var(--radius); padding: 20px; }
+  .darf-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-border); font-size: 13px; }
+  .darf-row:last-child { border-bottom: none; }
+  .darf-row.total { font-weight: 600; font-size: 15px; padding-top: 12px; }
+  .darf-isento { background: var(--green-light); border: 1px solid var(--green); border-radius: 8px; padding: 12px 16px; color: var(--green-dark); font-size: 13px; font-weight: 500; margin-top: 12px; }
+  .darf-pagar { background: var(--amber-light); border: 1px solid var(--amber); border-radius: 8px; padding: 12px 16px; color: var(--amber); font-size: 13px; font-weight: 500; margin-top: 12px; }
+  .month-select { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .month-select select, .month-select input { max-width: 130px; }
+
+  /* Posição */
+  .pm-badge { font-size: 11px; background: var(--gray-bg); padding: 2px 6px; border-radius: 4px; color: var(--gray-text); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green-dark); color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transform: translateY(8px); transition: all 0.25s; z-index: 999; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: var(--red); }
+
+  /* Spinner */
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { text-align: center; color: var(--gray-text); padding: 32px; font-size: 13px; }
+
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .tabs { gap: 2px; }
+    .tab { font-size: 11px; padding: 8px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+  </svg>
+  <h1>B3 · Controle de Ações & IR</h1>
+  <span id="sync-status">Não conectado</span>
+</header>
+
+<div class="container">
+
+  <!-- Config -->
+  <div class="config-banner" id="config-banner">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <input type="text" id="apps-script-url" placeholder="Cole aqui a URL do seu Apps Script publicado..." />
+    <button onclick="conectar()">Conectar</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('carteira')">📊 Carteira</button>
+    <button class="tab" onclick="showTab('operacoes')">📋 Operações</button>
+    <button class="tab" onclick="showTab('nova')">➕ Nova Op.</button>
+    <button class="tab" onclick="showTab('darf')">🧾 IR / DARF</button>
+  </div>
+
+  <!-- TAB: CARTEIRA -->
+  <div id="tab-carteira">
+    <div class="cards">
+      <div class="card"><div class="card-label">Ativos em carteira</div><div class="card-value neu" id="total-ativos">—</div></div>
+      <div class="card"><div class="card-label">Custo total</div><div class="card-value" id="total-custo">—</div></div>
+      <div class="card"><div class="card-label">Lucro / Prejuízo acumulado</div><div class="card-value" id="total-lp">—</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Posição atual</span>
+        <button class="btn btn-secondary" onclick="carregarDados()">↻ Atualizar</button>
+      </div>
+      <table>
+        <thead><tr><th>Ticker</th><th>Qtd.</th><th>Preço Médio</th><th>Custo Total</th><th>Lucro / Prej.</th></tr></thead>
+        <tbody id="tbody-carteira"><tr><td colspan="5" class="empty">Conecte ao Apps Script para carregar a carteira.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB: OPERAÇÕES -->
+  <div id="tab-operacoes" style="display:none">
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Histórico de operações</span>
+        <button class="btn btn-secondary" onclick="carregarOperacoes()">↻ Atualizar</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Qtd.</th><th>Preço Unit.</th><th>Taxas</th><th>Corretora</th><th></th></tr></thead>
+          <tbody id="tbody-ops"><tr><td colspan="8" class="empty">Nenhuma operação registrada.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: NOVA OPERAÇÃO -->
+  <div id="tab-nova" style="display:none">
+    <div class="section">
+      <div class="section-header"><span class="section-title">Registrar operação</span></div>
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="f-data">
+        </div>
+        <div class="form-group">
+          <label>Ticker *</label>
+          <input type="text" id="f-ticker" placeholder="Ex: PETR4" maxlength="8" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="f-tipo">
+            <option value="C">Compra (C)</option>
+            <option value="V">Venda (V)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade *</label>
+          <input type="number" id="f-qtd" placeholder="100" min="1">
+        </div>
+        <div class="form-group">
+          <label>Preço unit. (R$) *</label>
+          <input type="number" id="f-preco" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label>Taxas/Emolumentos (R$)</label>
+          <input type="number" id="f-taxas" placeholder="0,00" step="0.01" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Corretora</label>
+          <input type="text" id="f-corretora" placeholder="Ex: XP, Rico, Clear...">
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <input type="text" id="f-notas" placeholder="Observações...">
+        </div>
+      </div>
+      <!-- Preview -->
+      <div id="preview-op" style="background:var(--gray-bg);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;display:none">
+        <strong>Preview:</strong> <span id="preview-texto"></span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" id="btn-salvar" onclick="salvarOperacao()">
+          <span id="btn-salvar-label">Registrar operação</span>
+        </button>
+        <button class="btn btn-secondary" onclick="limparForm()">Limpar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DARF -->
+  <div id="tab-darf" style="display:none">
+    <div class="section">
+      <div class="section-header"><span class="section-title">Cálculo de IR — Swing Trade</span></div>
+      <div class="month-select">
+        <select id="darf-mes">
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+          <option value="3">Março</option><option value="4">Abril</option>
+          <option value="5">Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option>
+          <option value="9">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <input type="number" id="darf-ano" value="2025" min="2000" max="2099" style="max-width:90px">
+        <button class="btn btn-primary" onclick="calcularDarf()">Calcular</button>
+      </div>
+      <div id="darf-resultado">
+        <div class="empty">Selecione o mês e ano e clique em Calcular.</div>
+      </div>
+    </div>
+    <div class="section" style="margin-top:0">
+      <div class="section-header"><span class="section-title">ℹ Regras importantes</span></div>
+      <ul style="font-size:13px;color:var(--gray-text);line-height:1.8;padding-left:18px">
+        <li><strong>Swing Trade:</strong> Isento de IR se total de vendas no mês ≤ R$ 20.000.</li>
+        <li><strong>Swing Trade:</strong> Alíquota de 15% sobre o lucro líquido se vendas > R$ 20.000.</li>
+        <li><strong>Day Trade:</strong> Alíquota de 20% sobre o lucro líquido (sem isenção).</li>
+        <li><strong>DARF código 6015</strong> (Swing Trade). Vencimento: último dia útil do mês seguinte.</li>
+        <li><strong>Prejuízo:</strong> Pode ser compensado com lucros de meses seguintes da mesma modalidade.</li>
+        <li>Este app considera apenas Swing Trade. Para Day Trade, consulte sua corretora.</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+let SCRIPT_URL = localStorage.getItem("b3_script_url") || "";
+let operacoesCache = [];
+
+// ---- Init ----
+window.onload = () => {
+  const hoje = new Date();
+  document.getElementById("f-data").valueAsDate = hoje;
+  document.getElementById("darf-mes").value = hoje.getMonth() + 1;
+  document.getElementById("darf-ano").value = hoje.getFullYear();
+
+  if (SCRIPT_URL) {
+    document.getElementById("apps-script-url").value = SCRIPT_URL;
+    document.getElementById("config-banner").style.display = "none";
+    document.getElementById("sync-status").textContent = "Conectado";
+    carregarDados();
+  }
+
+  // Preview ao digitar
+  ["f-ticker","f-tipo","f-qtd","f-preco","f-taxas"].forEach(id => {
+    document.getElementById(id).addEventListener("input", atualizarPreview);
+  });
+};
+
+// ---- Conexão ----
+function conectar() {
+  const url = document.getElementById("apps-script-url").value.trim();
+  if (!url.includes("script.google.com")) { toast("URL inválida. Use a URL do Apps Script publicado.", true); return; }
+  SCRIPT_URL = url;
+  localStorage.setItem("b3_script_url", url);
+  document.getElementById("config-banner").style.display = "none";
+  document.getElementById("sync-status").textContent = "Conectado";
+  toast("Conectado com sucesso!");
+  carregarDados();
+}
+
+// ---- Tabs ----
+function showTab(tab) {
+  ["carteira","operacoes","nova","darf"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = t === tab ? "block" : "none";
+  });
+  document.querySelectorAll(".tab").forEach((el, i) => {
+    el.classList.toggle("active", ["carteira","operacoes","nova","darf"][i] === tab);
+  });
+  if (tab === "operacoes") carregarOperacoes();
+}
+
+// ---- API via JSONP (contorna CORS do Apps Script) ----
+function apiFetch(params) {
+  if (!SCRIPT_URL) { toast("Conecte ao Apps Script primeiro.", true); return Promise.resolve(null); }
+  return new Promise((resolve) => {
+    const cb = "cb_" + Date.now();
+    const script = document.createElement("script");
+    const timeout = setTimeout(() => {
+      delete window[cb];
+      script.remove();
+      toast("Timeout ao conectar. Verifique a URL do Apps Script.", true);
+      resolve(null);
+    }, 12000);
+    window[cb] = (data) => {
+      clearTimeout(timeout);
+      delete window[cb];
+      script.remove();
+      resolve(data);
+    };
+    const p = { ...params, callback: cb };
+    script.src = SCRIPT_URL + "?" + new URLSearchParams(p).toString();
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cb];
+      toast("Erro ao carregar script. Verifique a URL.", true);
+      resolve(null);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// POST via JSONP: envia dados serializados em GET (Apps Script redireciona POST→GET cross-origin)
+function apiPost(body) {
+  if (!SCRIPT_URL) { toast("Conecte ao Apps Script primeiro.", true); return Promise.resolve(null); }
+  const params = { ...body, _method: "POST" };
+  return apiFetch(params);
+}
+
+// ---- Carteira ----
+async function carregarDados() {
+  const data = await apiFetch({ action: "getResumo" });
+  if (!data) return;
+
+  const posicao = data.posicao || [];
+  const tbody = document.getElementById("tbody-carteira");
+
+  let totalCusto = 0, totalLP = 0;
+  if (posicao.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhuma posição em aberto.</td></tr>';
+  } else {
+    tbody.innerHTML = posicao.map(p => {
+      totalCusto += p.custoTotal;
+      totalLP    += p.lucroPrejuizo;
+      const lpClass = p.lucroPrejuizo >= 0 ? "pos" : "neg";
+      const lpSinal = p.lucroPrejuizo >= 0 ? "+" : "";
+      return `<tr>
+        <td><span class="badge badge-ticker">${p.ticker}</span></td>
+        <td>${p.quantidade}</td>
+        <td><strong>R$ ${fmt(p.precoMedio)}</strong></td>
+        <td>R$ ${fmt(p.custoTotal)}</td>
+        <td class="${lpClass}">${lpSinal}R$ ${fmt(p.lucroPrejuizo)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.getElementById("total-ativos").textContent = posicao.length;
+  document.getElementById("total-custo").textContent = posicao.length ? "R$ " + fmt(totalCusto) : "—";
+  const lpEl = document.getElementById("total-lp");
+  lpEl.textContent = posicao.length ? (totalLP >= 0 ? "+" : "") + "R$ " + fmt(totalLP) : "—";
+  lpEl.className = "card-value " + (totalLP >= 0 ? "pos" : "neg");
+}
+
+// ---- Operações ----
+async function carregarOperacoes() {
+  const data = await apiFetch({ action: "getAll" });
+  if (!data) return;
+  operacoesCache = data.operacoes || [];
+
+  const tbody = document.getElementById("tbody-ops");
+  if (!operacoesCache.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma operação registrada.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = [...operacoesCache].reverse().map((op, i) => {
+    const tipo = op["Tipo"];
+    const idx  = operacoesCache.length - i;
+    return `<tr>
+      <td>${op["Data"]}</td>
+      <td><span class="badge badge-ticker">${op["Ticker"]}</span></td>
+      <td><span class="badge ${tipo==="C"?"badge-c":"badge-v"}">${tipo==="C"?"Compra":"Venda"}</span></td>
+      <td>${op["Quantidade"]}</td>
+      <td>R$ ${fmt(op["Preço Unit. (R$)"])}</td>
+      <td>R$ ${fmt(op["Taxas (R$)"] || 0)}</td>
+      <td>${op["Corretora"] || "—"}</td>
+      <td><button class="btn-danger-sm" onclick="deletarOp(${op.rowIndex})">✕</button></td>
+    </tr>`;
+  }).join("");
+}
+
+async function deletarOp(rowIndex) {
+  if (!confirm("Confirma exclusão desta operação?")) return;
+  const res = await apiPost({ action: "deleteRow", rowIndex });
+  if (res && res.success) { toast("Operação removida."); carregarOperacoes(); carregarDados(); }
+}
+
+// ---- Nova operação ----
+function atualizarPreview() {
+  const ticker = document.getElementById("f-ticker").value.toUpperCase();
+  const tipo   = document.getElementById("f-tipo").value;
+  const qtd    = document.getElementById("f-qtd").value;
+  const preco  = document.getElementById("f-preco").value;
+  const taxas  = document.getElementById("f-taxas").value || 0;
+
+  if (!ticker || !qtd || !preco) { document.getElementById("preview-op").style.display = "none"; return; }
+
+  const total   = (Number(qtd) * Number(preco)).toFixed(2);
+  const tipoStr = tipo === "C" ? "Compra" : "Venda";
+  document.getElementById("preview-texto").textContent =
+    `${tipoStr} de ${qtd} ${ticker} × R$ ${preco} = R$ ${total} (taxas: R$ ${taxas})`;
+  document.getElementById("preview-op").style.display = "block";
+}
+
+async function salvarOperacao() {
+  const data     = document.getElementById("f-data").value;
+  const ticker   = document.getElementById("f-ticker").value.trim().toUpperCase();
+  const tipo     = document.getElementById("f-tipo").value;
+  const qtd      = document.getElementById("f-qtd").value;
+  const preco    = document.getElementById("f-preco").value;
+  const taxas    = document.getElementById("f-taxas").value || 0;
+  const corretora= document.getElementById("f-corretora").value.trim();
+  const notas    = document.getElementById("f-notas").value.trim();
+
+  if (!data || !ticker || !qtd || !preco) { toast("Preencha os campos obrigatórios (*)", true); return; }
+
+  const btn = document.getElementById("btn-salvar");
+  const lbl = document.getElementById("btn-salvar-label");
+  btn.disabled = true;
+  lbl.innerHTML = '<span class="spinner"></span> Salvando...';
+
+  // Converte data para dd/mm/aaaa
+  const [y,m,d] = data.split("-");
+  const dataFormatada = `${d}/${m}/${y}`;
+
+  const res = await apiPost({ action: "addOperacao", data: dataFormatada, ticker, tipo, quantidade: qtd, preco, taxas, corretora, notas });
+
+  btn.disabled = false;
+  lbl.textContent = "Registrar operação";
+
+  if (res && res.success) {
+    toast("Operação registrada com sucesso!");
+    limparForm();
+    carregarDados();
+  }
+}
+
+function limparForm() {
+  ["f-ticker","f-qtd","f-preco","f-taxas","f-corretora","f-notas"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f-taxas").value = 0;
+  document.getElementById("f-data").valueAsDate = new Date();
+  document.getElementById("preview-op").style.display = "none";
+}
+
+// ---- DARF ----
+async function calcularDarf() {
+  const mes = document.getElementById("darf-mes").value;
+  const ano = document.getElementById("darf-ano").value;
+
+  const data = await apiFetch({ action: "getDarf", mes, ano });
+  if (!data) return;
+
+  const meses = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const nomeMes = meses[Number(mes)];
+
+  let html = `<div class="darf-box">
+    <div class="darf-row"><span>Mês de referência</span><strong>${nomeMes}/${ano}</strong></div>
+    <div class="darf-row"><span>Total vendido no mês</span><strong>R$ ${fmt(data.totalVendido)}</strong></div>
+    <div class="darf-row"><span>Lucro/prejuízo apurado</span><strong class="${data.lucroSwing>=0?"pos":"neg"}">${data.lucroSwing>=0?"+":""}R$ ${fmt(data.lucroSwing)}</strong></div>`;
+
+  if (data.isentoSwing) {
+    html += `</div><div class="darf-isento">✅ <strong>Isento de IR</strong> — Total de vendas ≤ R$ 20.000,00. Nenhum DARF necessário para Swing Trade neste mês.</div>`;
+  } else if (data.lucroSwing <= 0) {
+    html += `</div><div class="darf-isento">✅ <strong>Sem IR a pagar</strong> — Resultado negativo (prejuízo). Guarde para compensar em meses futuros.</div>`;
+  } else {
+    html += `
+    <div class="darf-row"><span>Alíquota Swing Trade</span><strong>15%</strong></div>
+    <div class="darf-row total"><span>IR a recolher</span><strong>R$ ${fmt(data.ir)}</strong></div>
+    </div>
+    <div class="darf-pagar">
+      ⚠️ <strong>DARF a pagar</strong><br>
+      Código: <strong>${data.codigoDarf}</strong> &nbsp;|&nbsp;
+      Vencimento: último dia útil de <strong>${data.vencimento}</strong><br>
+      Valor: <strong>R$ ${fmt(data.ir)}</strong><br>
+      <span style="font-size:12px;opacity:0.8">Emita via Receita Federal (sicalcweb.receita.fazenda.gov.br) ou pelo seu banco.</span>
+    </div>`;
+  }
+
+  document.getElementById("darf-resultado").innerHTML = html;
+}
+
+// ---- Helpers ----
+function fmt(n) {
+  return Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function toast(msg, erro = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (erro ? " error" : "");
+  setTimeout(() => el.className = "toast", 3000);
+}
+</script>
+</body>
+</html>
